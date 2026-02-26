@@ -49,7 +49,6 @@ object DropPack {
                 )
             }
         }
-        .rootNode()
 
     fun dropPackCommand(
         sender: CommandSender,

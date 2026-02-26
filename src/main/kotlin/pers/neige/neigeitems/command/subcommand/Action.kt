@@ -22,5 +22,4 @@ object Action {
             val actions = context.getArgument<pers.neige.neigeitems.action.Action>("actions")
             actions.eval(ActionContext(player))
         }
-        .rootNode()
 }

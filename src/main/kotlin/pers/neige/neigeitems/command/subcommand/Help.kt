@@ -37,7 +37,6 @@ object Help {
             }
             result
         }
-        .rootNode()
 
     fun help(
         sender: CommandSender,

@@ -46,7 +46,6 @@ object GivePack {
                 )
             }
         }
-        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "root")
@@ -69,7 +68,6 @@ object GivePack {
                 }
             }
         }
-        .rootNode()
 
     fun givePackCommand(
         sender: CommandSender,

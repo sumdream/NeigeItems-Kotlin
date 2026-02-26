@@ -26,7 +26,6 @@ object ItemNBT {
         .setNullExecutor { context ->
             itemNBT(context)
         }
-        .rootNode()
 
     private fun itemNBT(context: Context<CommandSender, Unit>) {
         async {

@@ -31,7 +31,6 @@ object Editor {
                 player
             )
         }
-        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "root")
@@ -50,7 +49,6 @@ object Editor {
                 player
             )
         }
-        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "root")
@@ -72,5 +70,4 @@ object Editor {
                 player
             )
         }
-        .rootNode()
 }

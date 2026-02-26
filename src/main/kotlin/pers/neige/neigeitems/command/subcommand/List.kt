@@ -140,5 +140,4 @@ object List {
             }
             result
         }
-        .rootNode()
 }

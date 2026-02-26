@@ -52,7 +52,6 @@ object Drop {
                 )
             }
         }
-        .rootNode()
 
     fun dropCommand(
         sender: CommandSender,

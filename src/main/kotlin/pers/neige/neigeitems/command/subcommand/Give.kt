@@ -48,7 +48,6 @@ object Give {
                 )
             }
         }
-        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "root")
@@ -72,7 +71,6 @@ object Give {
                 )
             }
         }
-        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "root")
@@ -96,7 +94,6 @@ object Give {
                 }
             }
         }
-        .rootNode()
 
     fun giveCommand(
         sender: CommandSender,

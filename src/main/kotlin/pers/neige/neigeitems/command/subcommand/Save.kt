@@ -28,7 +28,6 @@ object Save {
         .setNullExecutor { context ->
             handle(context, context.getArgument("item"), context.getArgument("path"))
         }
-        .rootNode()
 
     private fun handle(context: Context<CommandSender, Unit>, id: String, path: String = "$id.yml") {
         val sender = context.source ?: return

@@ -31,7 +31,6 @@ object Load {
         .setNullExecutor { context ->
             save(context, context.getArgument("itemId"), context.getArgument("path"))
         }
-        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "mm")
@@ -40,7 +39,6 @@ object Load {
         .setNullExecutor { context ->
             saveAll(context, context.getArgument("path"))
         }
-        .rootNode()
 
     private fun save(context: Context<CommandSender, Unit>, id: String, path: String = "$id.yml") {
         val file = getFileOrCreate("Items${File.separator}$path")

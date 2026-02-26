@@ -178,5 +178,4 @@ object Search {
             }
             result
         }
-        .rootNode()
 }

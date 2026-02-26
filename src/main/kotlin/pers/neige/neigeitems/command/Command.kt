@@ -27,7 +27,7 @@ object Command {
     @Awake(lifeCycle = Awake.LifeCycle.ENABLE)
     fun init() {
         NeigeItems.getInstance().scanner.getCustomFields("root", Node::class.java).forEach {
-            Node.then(node, it as Node<CommandSender, Unit>, false)
+            node.thenTree(it as Node<CommandSender, Unit>, false)
         }
         node.buildLiteralSearcher()
 

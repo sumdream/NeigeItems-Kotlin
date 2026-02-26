@@ -37,7 +37,6 @@ object Give {
                 giveCommand(sender, sender, itemId, amount, tip)
             }
         }
-        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "mm")
@@ -55,7 +54,6 @@ object Give {
                 giveCommand(sender, player, itemId, amount, tip)
             }
         }
-        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "mm")
@@ -79,7 +77,6 @@ object Give {
                 }
             }
         }
-        .rootNode()
 
     private fun giveCommand(
         sender: CommandSender,

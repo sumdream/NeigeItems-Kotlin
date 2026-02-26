@@ -20,7 +20,7 @@ object MM {
     @Awake(lifeCycle = Awake.LifeCycle.ENABLE, priority = EventPriority.LOW)
     fun init() {
         NeigeItems.getInstance().scanner.getCustomFields("mm", Node::class.java).forEach {
-            Node.then(mm, it as Node<CommandSender, Unit>, false)
+            mm.thenTree(it as Node<CommandSender, Unit>, false)
         }
         mm.buildLiteralSearcher()
     }

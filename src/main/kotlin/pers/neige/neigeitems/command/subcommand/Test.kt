@@ -35,5 +35,4 @@ object Test {
                 sender.sendMessage("耗时: ${System.currentTimeMillis() - time}ms")
             }
         }
-        .rootNode()
 }

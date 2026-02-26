@@ -149,5 +149,4 @@ object Expansion {
                 }
             }
         }
-        .rootNode()
 }

@@ -23,5 +23,4 @@ object Parse {
             val sections = context.getArgument<String>("sections")
             sender.sendMessage(sections.parseSection(player))
         }
-        .rootNode()
 }

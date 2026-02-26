@@ -30,5 +30,4 @@ object Function {
             }
             functionContainer.function!!.eval(ActionContext(player, params, params))
         }
-        .rootNode()
 }

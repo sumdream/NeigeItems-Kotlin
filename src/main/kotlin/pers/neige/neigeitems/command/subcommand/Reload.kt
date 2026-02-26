@@ -80,5 +80,4 @@ object Reload {
                 context.source!!.sendLang("Messages.reloadedMessage")
             }
         }
-        .rootNode()
 }
