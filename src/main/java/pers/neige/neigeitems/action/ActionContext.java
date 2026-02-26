@@ -16,13 +16,10 @@ import java.util.Map;
 
 public class ActionContext implements Cloneable {
     private final @NonNull Bindings bindings;
-    private final @Nullable Player player;
+    private final @Nullable Object caster;
     private final @NonNull Map<String, Object> global;
     private final @Nullable Map<String, Object> params;
-    private final @Nullable ItemStack itemStack;
-    private final @Nullable NbtCompound nbt;
-    private final @Nullable Map<String, String> data;
-    private final @Nullable Event event;
+    private final Map<ContextKey<?>, Object> values = new HashMap<>();
     private boolean sync = Bukkit.isPrimaryThread();
 
     public ActionContext() {
@@ -30,39 +27,73 @@ public class ActionContext implements Cloneable {
     }
 
     public ActionContext(
-        @Nullable Player player
+        @Nullable Object caster
     ) {
-        this(player, null);
+        this(caster, null, null);
     }
 
     public ActionContext(
-        @Nullable Player player,
-        @Nullable Map<String, Object> params
-    ) {
-        this(player, null, params);
-    }
-
-    public ActionContext(
-        @Nullable Player player,
+        @Nullable Object caster,
         @Nullable Map<String, Object> global,
         @Nullable Map<String, Object> params
     ) {
-        this(player, global, params, null, null, null, null);
+        this.caster = caster;
+        if (global == null) {
+            this.global = new HashMap<>();
+        } else {
+            this.global = global;
+        }
+        this.params = params;
+        this.bindings = toBindings();
     }
 
     public ActionContext(
-        @Nullable Player player,
+        @Nullable Player caster
+    ) {
+        this((Object) caster, null, null);
+    }
+
+    public ActionContext(
+        @Nullable Player caster,
+        @Nullable Map<String, Object> global,
+        @Nullable Map<String, Object> params
+    ) {
+        this((Object) caster, global, params);
+    }
+
+    @Deprecated
+    public ActionContext(
+        @Nullable Player caster,
+        @Nullable Map<String, Object> params
+    ) {
+        this(caster, null, params);
+    }
+
+    @Deprecated
+    public ActionContext(
+        @Nullable Player caster,
         @Nullable Map<String, Object> global,
         @Nullable Map<String, Object> params,
         @Nullable ItemStack itemStack,
         @Nullable NbtCompound nbt,
         @Nullable Map<String, String> data
     ) {
-        this(player, global, params, itemStack, nbt, data, null);
+        this.caster = caster;
+        if (global == null) {
+            this.global = new HashMap<>();
+        } else {
+            this.global = global;
+        }
+        this.params = params;
+        this.values.put(ContextKeys.ITEM_STACK, itemStack);
+        this.values.put(ContextKeys.NBT, nbt);
+        this.values.put(ContextKeys.DATA, data);
+        this.bindings = toBindings();
     }
 
+    @Deprecated
     public ActionContext(
-        @Nullable Player player,
+        @Nullable Player caster,
         @Nullable Map<String, Object> global,
         @Nullable Map<String, Object> params,
         @Nullable ItemStack itemStack,
@@ -70,17 +101,17 @@ public class ActionContext implements Cloneable {
         @Nullable Map<String, String> data,
         @Nullable Event event
     ) {
-        this.player = player;
+        this.caster = caster;
         if (global == null) {
             this.global = new HashMap<>();
         } else {
             this.global = global;
         }
         this.params = params;
-        this.itemStack = itemStack;
-        this.nbt = nbt;
-        this.data = data;
-        this.event = event;
+        this.values.put(ContextKeys.ITEM_STACK, itemStack);
+        this.values.put(ContextKeys.NBT, nbt);
+        this.values.put(ContextKeys.DATA, data);
+        this.values.put(ContextKeys.EVENT, event);
         this.bindings = toBindings();
     }
 
@@ -89,6 +120,10 @@ public class ActionContext implements Cloneable {
      */
     public static @NonNull ActionContext empty() {
         return new ActionContext();
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -110,20 +145,17 @@ public class ActionContext implements Cloneable {
         if (params != null) {
             bindings.putAll(params);
         }
-        bindings.put("player", player);
-        if (itemStack != null) {
-            bindings.put("itemStack", itemStack);
+        bindings.put("target", caster);
+        if (caster instanceof Player) {
+            bindings.put("player", caster);
+        } else {
+            bindings.put("player", null);
         }
-        if (nbt != null) {
-            bindings.put("itemTag", nbt);
-            bindings.put("nbt", nbt);
-        }
-        if (data != null) {
-            bindings.put("data", data);
-        }
-        if (event != null) {
-            bindings.put("event", event);
-        }
+        values.forEach((key, value) -> {
+            key.getNames().forEach((alias) -> {
+                bindings.put(alias, value);
+            });
+        });
         bindings.put("global", global);
         bindings.put("glo", global);
         bindings.put("context", this);
@@ -151,10 +183,17 @@ public class ActionContext implements Cloneable {
     }
 
     /**
-     * 获取触发动作的玩家.
+     * 获取动作执行者.
+     */
+    public @Nullable Object getCaster() {
+        return caster;
+    }
+
+    /**
+     * 获取执行动作的玩家.
      */
     public @Nullable Player getPlayer() {
-        return player;
+        return caster instanceof Player ? (Player) caster : null;
     }
 
     /**
@@ -171,32 +210,50 @@ public class ActionContext implements Cloneable {
         return params;
     }
 
+    public <T> void set(@NonNull ContextKey<T> key, @Nullable T value) {
+        values.put(key, value);
+        key.getNames().forEach((alias) -> {
+            bindings.put(alias, value);
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> @Nullable T get(@NonNull ContextKey<T> key) {
+        return (T) values.get(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> @Nullable T remove(@NonNull ContextKey<T> key) {
+        key.getNames().forEach(bindings::remove);
+        return (T) values.remove(key);
+    }
+
     /**
      * 获取触发动作的物品.
      */
     public @Nullable ItemStack getItemStack() {
-        return itemStack;
+        return get(ContextKeys.ITEM_STACK);
     }
 
     /**
      * 获取触发动作物品的 NBT.
      */
     public @Nullable NbtCompound getNbt() {
-        return nbt;
+        return get(ContextKeys.NBT);
     }
 
     /**
      * 获取触发动作物品的 NeigeItems 节点信息.
      */
     public @Nullable Map<String, String> getData() {
-        return data;
+        return get(ContextKeys.DATA);
     }
 
     /**
      * 获取触发动作的事件.
      */
     public @Nullable Event getEvent() {
-        return event;
+        return get(ContextKeys.EVENT);
     }
 
     /**
@@ -211,5 +268,38 @@ public class ActionContext implements Cloneable {
      */
     public void setSync(boolean sync) {
         this.sync = sync;
+    }
+
+    public static class Builder {
+        private final @NonNull Map<ContextKey<?>, Object> values = new HashMap<>();
+        private @Nullable Object caster;
+        private @Nullable Map<String, Object> global;
+        private @Nullable Map<String, Object> params;
+
+        public Builder caster(Object caster) {
+            this.caster = caster;
+            return this;
+        }
+
+        public Builder global(Map<String, Object> global) {
+            this.global = global;
+            return this;
+        }
+
+        public Builder params(Map<String, Object> params) {
+            this.params = params;
+            return this;
+        }
+
+        public <T> Builder with(@NonNull ContextKey<T> key, @Nullable T value) {
+            values.put(key, value);
+            return this;
+        }
+
+        public ActionContext build() {
+            ActionContext context = new ActionContext(caster, global, params);
+            context.values.putAll(values);
+            return context;
+        }
     }
 }

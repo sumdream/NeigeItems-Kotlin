@@ -3,8 +3,7 @@ package pers.neige.neigeitems.command.subcommand
 import net.md_5.bungee.api.chat.ComponentBuilder
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import pers.neige.colonel.argument
-import pers.neige.colonel.literal
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.annotation.CustomField
 import pers.neige.neigeitems.colonel.argument.command.IntegerArgument
 import pers.neige.neigeitems.manager.ConfigManager
@@ -24,22 +23,21 @@ object Help {
 
     @JvmStatic
     @CustomField(fieldType = "root")
-    val help = literal<CommandSender, Unit>("help") {
-        argument("page", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-            setNullExecutor { context ->
-                val sender = context.source ?: return@setNullExecutor
-                val page = context.getArgument<Int?>("page")!!
-                help(sender, page)
-            }
-            setTaber { context, remaining ->
-                val result = arrayListOf<String>()
-                for (i in 1..ceil(commandsPages / ConfigManager.config.getInt("Help.amount").toDouble()).toInt()) {
-                    result.add(i.toString())
-                }
-                result
-            }
+    val help = LiteralNode.literal<CommandSender, Unit>("help")
+        .thenArgument("page", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .setNullExecutor { context ->
+            val sender = context.source ?: return@setNullExecutor
+            val page = context.getArgument<Int?>("page")!!
+            help(sender, page)
         }
-    }
+        .setTaber { context, remaining ->
+            val result = arrayListOf<String>()
+            for (i in 1..ceil(commandsPages / ConfigManager.config.getInt("Help.amount").toDouble()).toInt()) {
+                result.add(i.toString())
+            }
+            result
+        }
+        .rootNode()
 
     fun help(
         sender: CommandSender,

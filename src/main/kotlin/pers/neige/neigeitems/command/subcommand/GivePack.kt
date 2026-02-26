@@ -4,9 +4,8 @@ import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import pers.neige.colonel.argument
 import pers.neige.colonel.arguments.impl.StringArgument
-import pers.neige.colonel.literal
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.annotation.CustomField
 import pers.neige.neigeitems.colonel.argument.command.IntegerArgument
 import pers.neige.neigeitems.colonel.argument.command.ItemPackArgument
@@ -28,64 +27,49 @@ import pers.neige.neigeitems.utils.SchedulerUtils.sync
 object GivePack {
     @JvmStatic
     @CustomField(fieldType = "root")
-    val givePack = literal<CommandSender, Unit>("givePack", arrayListOf("givePack", "givePackSilent")) {
-        argument("player", PlayerArgument.NONNULL) {
-            argument("pack", ItemPackArgument.INSTANCE) {
-                argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                    argument(
-                        "data",
-                        StringArgument.builder<CommandSender, Unit>().readAll(true).build()
-                            .setDefaultValue(null)
-                    ) {
-                        setNullExecutor { context ->
-                            async {
-                                val sender = context.source ?: return@async
-                                val tip = context.getArgument<String>("givePack").equals("givePack", true)
-                                val player = context.getArgument<Player>("player")!!
-                                val itemPack =
-                                    context.getArgument<ItemPackArgument.ItemPackContainer>("pack").itemPack!!
-                                val amount = context.getArgument<Int?>("amount")!!
-                                val data = context.getArgument<String>("data")
-                                givePackCommand(
-                                    sender, player, itemPack, amount, data, tip
-                                )
-                            }
-                        }
-                    }
-                }
+    val givePack = LiteralNode.literal<CommandSender, Unit>("givePack", "givePackSilent")
+        .thenArgument("player", PlayerArgument.NONNULL)
+        .thenArgument("pack", ItemPackArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .thenArgument("data", StringArgument.builder<CommandSender, Unit>().readAll(true).build().setDefaultValue(null))
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                val tip = context.getArgument<String>("givePack").equals("givePack", true)
+                val player = context.getArgument<Player>("player")!!
+                val itemPack =
+                    context.getArgument<ItemPackArgument.ItemPackContainer>("pack").itemPack!!
+                val amount = context.getArgument<Int?>("amount")!!
+                val data = context.getArgument<String>("data")
+                givePackCommand(
+                    sender, player, itemPack, amount, data, tip
+                )
             }
         }
-    }
+        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "root")
-    val givePackAll = literal<CommandSender, Unit>("givePackAll", arrayListOf("givePackAll", "givePackAllSilent")) {
-        argument("pack", ItemPackArgument.INSTANCE) {
-            argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                argument(
-                    "data",
-                    StringArgument.builder<CommandSender, Unit>().readAll(true).build()
-                        .setDefaultValue(null)
-                ) {
-                    setNullExecutor { context ->
-                        async {
-                            val sender = context.source ?: return@async
-                            val tip = context.getArgument<String>("givePackAll").equals("givePackAll", true)
-                            val itemPack =
-                                context.getArgument<ItemPackArgument.ItemPackContainer>("pack").itemPack!!
-                            val amount = context.getArgument<Int?>("amount")!!
-                            val data = context.getArgument<String>("data")
-                            Bukkit.getOnlinePlayers().forEach { player ->
-                                givePackCommand(
-                                    sender, player, itemPack, amount, data, tip
-                                )
-                            }
-                        }
-                    }
+    val givePackAll = LiteralNode.literal<CommandSender, Unit>("givePackAll", "givePackAllSilent")
+        .thenArgument("pack", ItemPackArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .thenArgument("data", StringArgument.builder<CommandSender, Unit>().readAll(true).build().setDefaultValue(null))
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                val tip = context.getArgument<String>("givePackAll").equals("givePackAll", true)
+                val itemPack =
+                    context.getArgument<ItemPackArgument.ItemPackContainer>("pack").itemPack!!
+                val amount = context.getArgument<Int?>("amount")!!
+                val data = context.getArgument<String>("data")
+                Bukkit.getOnlinePlayers().forEach { player ->
+                    givePackCommand(
+                        sender, player, itemPack, amount, data, tip
+                    )
                 }
             }
         }
-    }
+        .rootNode()
 
     fun givePackCommand(
         sender: CommandSender,

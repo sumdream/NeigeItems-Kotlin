@@ -9,6 +9,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -219,7 +221,7 @@ public abstract class BaseActionManager {
     public @NonNull ActionResult runAction(
         @NonNull Action action
     ) {
-        action.eval(ActionContext.empty());
+        action.eval(new ActionContext());
         return Results.SUCCESS;
     }
 
@@ -234,7 +236,7 @@ public abstract class BaseActionManager {
     public @NonNull CompletableFuture<ActionResult> runActionWithResult(
         @NonNull Action action
     ) {
-        return action.eval(ActionContext.empty());
+        return action.eval(new ActionContext());
     }
 
     /**
@@ -1004,15 +1006,15 @@ public abstract class BaseActionManager {
     protected void loadBasicActions() {
         // 向玩家发送消息
         addConsumer("tell", (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', content));
+            val caster = context.getCaster();
+            if (!(caster instanceof CommandSender)) return;
+            ((CommandSender) caster).sendMessage(ChatColor.translateAlternateColorCodes('&', content));
         });
         // 向玩家发送消息(不将&解析为颜色符号)
         addConsumer(Arrays.asList("tell-no-color", "tellNoColor"), (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
-            player.sendMessage(content);
+            val caster = context.getCaster();
+            if (!(caster instanceof CommandSender)) return;
+            ((CommandSender) caster).sendMessage(content);
         });
         // 向玩家发送消息, 未指定玩家则向后台发送消息
         addConsumer("tell-or-print", (context, content) -> {
@@ -1226,21 +1228,24 @@ public abstract class BaseActionManager {
         });
         // 给予玩家生命
         addConsumer(Arrays.asList("give-health", "giveHealth"), false, (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
-            player.setHealth(Math.max(0, Math.min(Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue(), player.getHealth() + StringUtils.parseDouble(content, 0))));
+            val caster = context.getCaster();
+            if (!(caster instanceof LivingEntity)) return;
+            val entity = (LivingEntity) caster;
+            entity.setHealth(Math.max(0, Math.min(Objects.requireNonNull(entity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue(), entity.getHealth() + StringUtils.parseDouble(content, 0))));
         });
         // 扣除玩家生命
         addConsumer(Arrays.asList("take-health", "takeHealth"), false, (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
-            player.setHealth(Math.max(0, Math.min(Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue(), player.getHealth() - StringUtils.parseDouble(content, 0))));
+            val caster = context.getCaster();
+            if (!(caster instanceof LivingEntity)) return;
+            val entity = (LivingEntity) caster;
+            entity.setHealth(Math.max(0, Math.min(Objects.requireNonNull(entity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue(), entity.getHealth() - StringUtils.parseDouble(content, 0))));
         });
         // 设置玩家生命
         addConsumer(Arrays.asList("set-health", "setHealth"), false, (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
-            player.setHealth(Math.max(0, Math.min(Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue(), StringUtils.parseDouble(content, 0))));
+            val caster = context.getCaster();
+            if (!(caster instanceof LivingEntity)) return;
+            val entity = (LivingEntity) caster;
+            entity.setHealth(Math.max(0, Math.min(Objects.requireNonNull(entity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue(), StringUtils.parseDouble(content, 0))));
         });
         // 释放MM技能
         addConsumer(Arrays.asList("cast-skill", "castSkill"), (context, content) -> {
@@ -1285,23 +1290,25 @@ public abstract class BaseActionManager {
         });
         // 设置药水效果
         addConsumer(Arrays.asList("set-potion", "setPotion", "set-potion-effect", "setPotionEffect"), false, (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
+            val caster = context.getCaster();
+            if (!(caster instanceof LivingEntity)) return;
+            val entity = (LivingEntity) caster;
             val args = content.split(" ", 3);
             if (args.length < 3) return;
             val type = PotionEffectType.getByName(args[0].toUpperCase(Locale.ROOT));
             val amplifier = StringUtils.parseInteger(args[1]);
             val duration = StringUtils.parseInteger(args[2]);
             if (type == null || duration == null || amplifier == null) return;
-            player.addPotionEffect(new PotionEffect(type, duration * 20, amplifier - 1), true);
+            entity.addPotionEffect(new PotionEffect(type, duration * 20, amplifier - 1), true);
         });
         // 移除药水效果
         addConsumer(Arrays.asList("remove-potion", "removePotion", "remove-potion-effect", "removePotionEffect"), false, (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
+            val caster = context.getCaster();
+            if (!(caster instanceof LivingEntity)) return;
+            val entity = (LivingEntity) caster;
             val type = PotionEffectType.getByName(content.toUpperCase(Locale.ROOT));
             if (type == null) return;
-            player.removePotionEffect(type);
+            entity.removePotionEffect(type);
         });
         // 延迟(单位是tick)
         addFunction("delay", (context, content) -> {
@@ -1469,8 +1476,9 @@ public abstract class BaseActionManager {
         });
         // 传送
         addConsumer(Arrays.asList("teleport", "tp"), false, (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
+            val caster = context.getCaster();
+            if (!(caster instanceof Entity)) return;
+            val entity = (Entity) caster;
             val args = content.split(" ", 6);
             if (args.length < 4) return;
             val world = Bukkit.getWorld(args[0]);
@@ -1481,7 +1489,7 @@ public abstract class BaseActionManager {
             if (y == null) return;
             val z = NumberParser.parseDouble(args[3]);
             if (z == null) return;
-            val location = player.getLocation();
+            val location = entity.getLocation();
             val yaw = ListUtils.getAndApply(args, 4, location.getYaw(), NumberParser::parseFloat);
             val pitch = ListUtils.getAndApply(args, 5, location.getPitch(), NumberParser::parseFloat);
             location.setWorld(world);
@@ -1490,7 +1498,7 @@ public abstract class BaseActionManager {
             location.setZ(z);
             location.setYaw(yaw);
             location.setPitch(pitch);
-            player.teleport(location);
+            entity.teleport(location);
         });
     }
 }

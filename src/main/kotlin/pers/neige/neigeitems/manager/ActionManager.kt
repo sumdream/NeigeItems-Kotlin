@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import pers.neige.neigeitems.NeigeItems
 import pers.neige.neigeitems.action.ActionContext
 import pers.neige.neigeitems.action.ActionResult
+import pers.neige.neigeitems.action.ContextKeys
 import pers.neige.neigeitems.action.impl.StringAction
 import pers.neige.neigeitems.action.result.Results
 import pers.neige.neigeitems.event.ItemActionEvent
@@ -287,7 +288,15 @@ object ActionManager : BaseActionManager(NeigeItems.getInstance()) {
         // 用于存储整个动作执行过程中的全局变量
         val global = HashMap<String, Any?>()
         // 动作上下文
-        val context = ActionContext(player, global, null, itemStack, itemTag, data, event)
+        val context = ActionContext.builder()
+            .caster(player)
+            .global(global)
+            .params(null)
+            .with(ContextKeys.ITEM_STACK, itemStack)
+            .with(ContextKeys.NBT, itemTag)
+            .with(ContextKeys.DATA, data)
+            .with(ContextKeys.EVENT, event)
+            .build()
         // 如果物品需要消耗
         if (consume != null) {
             // 预执行动作
@@ -534,7 +543,15 @@ object ActionManager : BaseActionManager(NeigeItems.getInstance()) {
         // 用于存储整个动作执行过程中的全局变量
         val global = HashMap<String, Any?>()
         // 动作上下文
-        val context = ActionContext(player, global, null, itemStack, itemTag, data, event)
+        val context = ActionContext.builder()
+            .caster(player)
+            .global(global)
+            .params(null)
+            .with(ContextKeys.ITEM_STACK, itemStack)
+            .with(ContextKeys.NBT, itemTag)
+            .with(ContextKeys.DATA, data)
+            .with(ContextKeys.EVENT, event)
+            .build()
         if (consumeItem) {
             // 获取物品消耗信息
             val consume = trigger.consume
@@ -602,6 +619,15 @@ object ActionManager : BaseActionManager(NeigeItems.getInstance()) {
         }
         player.setMetadataEZ("TICK-${trigger.group}", tick)
         // 执行动作
-        trigger.run(ActionContext(player, HashMap(), null, itemStack, itemTag, itemInfo.data))
+        trigger.run(
+            ActionContext.builder()
+                .caster(player)
+                .global(HashMap())
+                .params(null)
+                .with(ContextKeys.ITEM_STACK, itemStack)
+                .with(ContextKeys.NBT, itemTag)
+                .with(ContextKeys.DATA, itemInfo.data)
+                .build()
+        )
     }
 }

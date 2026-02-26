@@ -2,8 +2,8 @@ package pers.neige.neigeitems.command.subcommand
 
 import org.bukkit.command.CommandSender
 import org.bukkit.event.EventPriority
-import pers.neige.colonel.literal
 import pers.neige.colonel.node.Node
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.NeigeItems
 import pers.neige.neigeitems.annotation.Awake
 import pers.neige.neigeitems.annotation.CustomField
@@ -14,7 +14,7 @@ import pers.neige.neigeitems.annotation.CustomField
 object MM {
     @JvmStatic
     @CustomField(fieldType = "root")
-    val mm = literal<CommandSender, Unit>("mm")
+    val mm = LiteralNode.literal<CommandSender, Unit>("mm")
 
     @JvmStatic
     @Awake(lifeCycle = Awake.LifeCycle.ENABLE, priority = EventPriority.LOW)

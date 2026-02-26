@@ -3,8 +3,7 @@ package pers.neige.neigeitems.command.subcommand.mm
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import pers.neige.colonel.argument
-import pers.neige.colonel.literal
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.annotation.CustomField
 import pers.neige.neigeitems.colonel.argument.command.IntegerArgument
 import pers.neige.neigeitems.colonel.argument.command.MaybeMMItemIdArgument
@@ -22,72 +21,65 @@ import pers.neige.neigeitems.utils.SchedulerUtils.sync
 object Give {
     @JvmStatic
     @CustomField(fieldType = "mm")
-    val get = literal<CommandSender, Unit>("get", arrayListOf("get", "getSilent")) {
-        argument("itemId", MaybeMMItemIdArgument.INSTANCE) {
-            argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                setNullExecutor { context ->
-                    async {
-                        val sender = context.source ?: return@async
-                        if (sender !is Player) {
-                            sender.sendLang("Messages.onlyPlayer")
-                            return@async
-                        }
-                        val tip = context.getArgument<String>("get").equals("get", true)
-                        val itemId = context.getArgument<String>("itemId")!!
-                        val amount = context.getArgument<Int?>("amount")!!
-                        giveCommand(sender, sender, itemId, amount, tip)
-                    }
+    val get = LiteralNode.literal<CommandSender, Unit>("get", "getSilent")
+        .thenArgument("itemId", MaybeMMItemIdArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                if (sender !is Player) {
+                    sender.sendLang("Messages.onlyPlayer")
+                    return@async
                 }
+                val tip = context.getArgument<String>("get").equals("get", true)
+                val itemId = context.getArgument<String>("itemId")!!
+                val amount = context.getArgument<Int?>("amount")!!
+                giveCommand(sender, sender, itemId, amount, tip)
             }
         }
-    }
+        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "mm")
-    val give = literal<CommandSender, Unit>("give", arrayListOf("give", "giveSilent")) {
-        argument("player", PlayerArgument.NONNULL) {
-            argument("itemId", MaybeMMItemIdArgument.INSTANCE) {
-                argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                    setNullExecutor { context ->
-                        async {
-                            val sender = context.source ?: return@async
-                            val tip = context.getArgument<String>("give").equals("give", true)
-                            val player = context.getArgument<Player>("player")!!
-                            val itemId = context.getArgument<String>("itemId")!!
-                            val amount = context.getArgument<Int?>("amount")!!
-                            giveCommand(sender, player, itemId, amount, tip)
-                        }
-                    }
-                }
+    val give = LiteralNode.literal<CommandSender, Unit>("give", "giveSilent")
+        .thenArgument("player", PlayerArgument.NONNULL)
+        .thenArgument("itemId", MaybeMMItemIdArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                val tip = context.getArgument<String>("give").equals("give", true)
+                val player = context.getArgument<Player>("player")!!
+                val itemId = context.getArgument<String>("itemId")!!
+                val amount = context.getArgument<Int?>("amount")!!
+                giveCommand(sender, player, itemId, amount, tip)
             }
         }
-    }
+        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "mm")
-    val giveAll = literal<CommandSender, Unit>("giveAll", arrayListOf("giveAll", "giveAllSilent")) {
-        argument("itemId", MaybeMMItemIdArgument.INSTANCE) {
-            argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                setNullExecutor { context ->
-                    async {
-                        val sender = context.source ?: return@async
-                        if (sender !is Player) {
-                            sender.sendLang("Messages.onlyPlayer")
-                            return@async
-                        }
-                        val tip = context.getArgument<String>("giveAll").equals("giveAll", true)
-                        val itemId = context.getArgument<String>("itemId")!!
-                        val amount = context.getArgument<Int?>("amount")!!
-                        Bukkit.getOnlinePlayers().forEach { player ->
-                            giveCommand(
-                                sender, player, itemId, amount, tip
-                            )
-                        }
-                    }
+    val giveAll = LiteralNode.literal<CommandSender, Unit>("giveAll", "giveAllSilent")
+        .thenArgument("itemId", MaybeMMItemIdArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                if (sender !is Player) {
+                    sender.sendLang("Messages.onlyPlayer")
+                    return@async
+                }
+                val tip = context.getArgument<String>("giveAll").equals("giveAll", true)
+                val itemId = context.getArgument<String>("itemId")!!
+                val amount = context.getArgument<Int?>("amount")!!
+                Bukkit.getOnlinePlayers().forEach { player ->
+                    giveCommand(
+                        sender, player, itemId, amount, tip
+                    )
                 }
             }
         }
-    }
+        .rootNode()
 
     private fun giveCommand(
         sender: CommandSender,

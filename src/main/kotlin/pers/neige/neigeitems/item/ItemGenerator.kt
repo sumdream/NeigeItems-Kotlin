@@ -11,6 +11,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.ItemStack
 import org.slf4j.LoggerFactory
 import pers.neige.neigeitems.action.ActionContext
+import pers.neige.neigeitems.action.ContextKeys
 import pers.neige.neigeitems.action.container.ActionContainer
 import pers.neige.neigeitems.config.ConfigReader
 import pers.neige.neigeitems.event.ItemGenerateEvent
@@ -373,14 +374,14 @@ class ItemGenerator(val itemConfig: ItemConfig) {
                 "id" to id,
                 "item" to this
             )
-            val context = ActionContext(
-                player?.player,
-                params,
-                params,
-                event.itemStack,
-                event.itemStack.getNbtOrNull(),
-                event.cache
-            )
+            val context = ActionContext.builder()
+                .caster(player?.player)
+                .global(params)
+                .params(params)
+                .with(ContextKeys.ITEM_STACK, event.itemStack)
+                .with(ContextKeys.NBT, event.itemStack.getNbtOrNull())
+                .with(ContextKeys.DATA, event.cache)
+                .build()
             eventActions.run("post-generate", context)
             event.itemStack.amount = 1
             return event.itemStack

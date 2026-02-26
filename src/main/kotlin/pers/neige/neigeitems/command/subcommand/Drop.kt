@@ -4,11 +4,10 @@ import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import pers.neige.colonel.argument
 import pers.neige.colonel.arguments.impl.BooleanArgument
 import pers.neige.colonel.arguments.impl.StringArgument
 import pers.neige.colonel.coordinates.CoordinatesContainer
-import pers.neige.colonel.literal
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.annotation.CustomField
 import pers.neige.neigeitems.colonel.argument.command.*
 import pers.neige.neigeitems.event.ItemDropEvent
@@ -24,47 +23,36 @@ import pers.neige.neigeitems.utils.SchedulerUtils.async
 object Drop {
     @JvmStatic
     @CustomField(fieldType = "root")
-    val drop = literal<CommandSender, Unit>("drop", arrayListOf("drop", "dropSilent")) {
-        argument("item", ItemArgument.INSTANCE) {
-            argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                argument("world", WorldArgument.INSTANCE) {
-                    argument("location", CoordinatesArgument.INSTANCE) {
-                        argument("random", BooleanArgument<CommandSender, Unit>().setDefaultValue(true)) {
-                            argument("target", PlayerArgument.NONNULL.setDefaultValue(null)) {
-                                argument(
-                                    "data",
-                                    StringArgument.builder<CommandSender, Unit>().readAll(true).build()
-                                        .setDefaultValue(null)
-                                ) {
-                                    setNullExecutor { context ->
-                                        async {
-                                            val sender = context.source ?: return@async
-                                            val tip = context.getArgument<String>("drop").equals("drop", true)
-                                            val item =
-                                                context.getArgument<ItemArgument.ItemContainer>("item").itemGenerator!!
-                                            val amount = context.getArgument<Int?>("amount")!!
-                                            val world = context.getArgument<World>("world")!!
-                                            val location =
-                                                context.getArgument<CoordinatesContainer>("location")!!.result!!.getLocation(
-                                                    world,
-                                                    sender as? Player
-                                                )
-                                            val random = context.getArgument<Boolean?>("random")!!
-                                            val parser = context.getArgument<Player>("target")
-                                            val data = context.getArgument<String>("data")
-                                            dropCommand(
-                                                sender, item, amount, location, random, parser, data, tip
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+    val drop = LiteralNode.literal<CommandSender, Unit>("drop", "dropSilent")
+        .thenArgument("item", ItemArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .thenArgument("world", WorldArgument.INSTANCE)
+        .thenArgument("location", CoordinatesArgument.INSTANCE)
+        .thenArgument("random", BooleanArgument<CommandSender, Unit>().setDefaultValue(true))
+        .thenArgument("target", PlayerArgument.NONNULL.setDefaultValue(null))
+        .thenArgument("data", StringArgument.builder<CommandSender, Unit>().readAll(true).build().setDefaultValue(null))
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                val tip = context.getArgument<String>("drop").equals("drop", true)
+                val item =
+                    context.getArgument<ItemArgument.ItemContainer>("item").itemGenerator!!
+                val amount = context.getArgument<Int?>("amount")!!
+                val world = context.getArgument<World>("world")!!
+                val location =
+                    context.getArgument<CoordinatesContainer>("location")!!.result!!.getLocation(
+                        world,
+                        sender as? Player
+                    )
+                val random = context.getArgument<Boolean?>("random")!!
+                val parser = context.getArgument<Player>("target")
+                val data = context.getArgument<String>("data")
+                dropCommand(
+                    sender, item, amount, location, random, parser, data, tip
+                )
             }
         }
-    }
+        .rootNode()
 
     fun dropCommand(
         sender: CommandSender,

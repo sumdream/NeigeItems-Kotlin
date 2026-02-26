@@ -5,10 +5,9 @@ import org.bukkit.World
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import pers.neige.colonel.argument
 import pers.neige.colonel.arguments.impl.StringArgument
 import pers.neige.colonel.coordinates.CoordinatesContainer
-import pers.neige.colonel.literal
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.annotation.CustomField
 import pers.neige.neigeitems.colonel.argument.command.*
 import pers.neige.neigeitems.event.ItemPackDropEvent
@@ -23,44 +22,34 @@ import pers.neige.neigeitems.utils.SchedulerUtils.async
 object DropPack {
     @JvmStatic
     @CustomField(fieldType = "root")
-    val dropPack = literal<CommandSender, Unit>("dropPack", arrayListOf("dropPack", "dropPackSilent")) {
-        argument("pack", ItemPackArgument.INSTANCE) {
-            argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                argument("world", WorldArgument.INSTANCE) {
-                    argument("location", CoordinatesArgument.INSTANCE) {
-                        argument("target", PlayerArgument.NONNULL.setDefaultValue(null)) {
-                            argument(
-                                "data",
-                                StringArgument.builder<CommandSender, Unit>().readAll(true).build()
-                                    .setDefaultValue(null)
-                            ) {
-                                setNullExecutor { context ->
-                                    async {
-                                        val sender = context.source ?: return@async
-                                        val tip = context.getArgument<String>("dropPack").equals("dropPack", true)
-                                        val pack =
-                                            context.getArgument<ItemPackArgument.ItemPackContainer>("pack").itemPack!!
-                                        val amount = context.getArgument<Int?>("amount")!!
-                                        val world = context.getArgument<World>("world")!!
-                                        val location =
-                                            context.getArgument<CoordinatesContainer>("location")!!.result!!.getLocation(
-                                                world,
-                                                sender as? Player
-                                            )
-                                        val parser = context.getArgument<Player>("target")
-                                        val data = context.getArgument<String>("data")
-                                        dropPackCommand(
-                                            sender, pack, amount, location, parser, data, tip
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+    val dropPack = LiteralNode.literal<CommandSender, Unit>("dropPack", "dropPackSilent")
+        .thenArgument("pack", ItemPackArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .thenArgument("world", WorldArgument.INSTANCE)
+        .thenArgument("location", CoordinatesArgument.INSTANCE)
+        .thenArgument("target", PlayerArgument.NONNULL.setDefaultValue(null))
+        .thenArgument("data", StringArgument.builder<CommandSender, Unit>().readAll(true).build().setDefaultValue(null))
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                val tip = context.getArgument<String>("dropPack").equals("dropPack", true)
+                val pack =
+                    context.getArgument<ItemPackArgument.ItemPackContainer>("pack").itemPack!!
+                val amount = context.getArgument<Int?>("amount")!!
+                val world = context.getArgument<World>("world")!!
+                val location =
+                    context.getArgument<CoordinatesContainer>("location")!!.result!!.getLocation(
+                        world,
+                        sender as? Player
+                    )
+                val parser = context.getArgument<Player>("target")
+                val data = context.getArgument<String>("data")
+                dropPackCommand(
+                    sender, pack, amount, location, parser, data, tip
+                )
             }
         }
-    }
+        .rootNode()
 
     fun dropPackCommand(
         sender: CommandSender,

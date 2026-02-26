@@ -2,9 +2,8 @@ package pers.neige.neigeitems.command.subcommand.mm
 
 import org.bukkit.command.CommandSender
 import org.bukkit.configuration.file.YamlConfiguration
-import pers.neige.colonel.argument
 import pers.neige.colonel.context.Context
-import pers.neige.colonel.literal
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.annotation.CustomField
 import pers.neige.neigeitems.colonel.argument.command.FileNameArgument
 import pers.neige.neigeitems.colonel.argument.command.MaybeMMItemIdArgument
@@ -23,28 +22,25 @@ import java.io.File
 object Load {
     @JvmStatic
     @CustomField(fieldType = "mm")
-    val load = literal<CommandSender, Unit>("load", arrayListOf("load", "cover")) {
-        argument("itemId", MaybeMMItemIdArgument.INSTANCE) {
-            setNullExecutor { context ->
-                save(context, context.getArgument("itemId"))
-            }
-            argument("path", FileNameArgument { getDirectoryOrCreate("Items") }) {
-                setNullExecutor { context ->
-                    save(context, context.getArgument("itemId"), context.getArgument("path"))
-                }
-            }
+    val load = LiteralNode.literal<CommandSender, Unit>("load", "cover")
+        .thenArgument("itemId", MaybeMMItemIdArgument.INSTANCE)
+        .setNullExecutor { context ->
+            save(context, context.getArgument("itemId"))
         }
-    }
+        .thenArgument("path", FileNameArgument { getDirectoryOrCreate("Items") })
+        .setNullExecutor { context ->
+            save(context, context.getArgument("itemId"), context.getArgument("path"))
+        }
+        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "mm")
-    val loadAll = literal<CommandSender, Unit>("loadAll") {
-        argument("path", FileNameArgument { getDirectoryOrCreate("Items") }) {
-            setNullExecutor { context ->
-                saveAll(context, context.getArgument("path"))
-            }
+    val loadAll = LiteralNode.literal<CommandSender, Unit>("loadAll")
+        .thenArgument("path", FileNameArgument { getDirectoryOrCreate("Items") })
+        .setNullExecutor { context ->
+            saveAll(context, context.getArgument("path"))
         }
-    }
+        .rootNode()
 
     private fun save(context: Context<CommandSender, Unit>, id: String, path: String = "$id.yml") {
         val file = getFileOrCreate("Items${File.separator}$path")

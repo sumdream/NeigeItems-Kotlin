@@ -3,10 +3,9 @@ package pers.neige.neigeitems.command.subcommand
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import pers.neige.colonel.argument
 import pers.neige.colonel.arguments.impl.BooleanArgument
 import pers.neige.colonel.arguments.impl.StringArgument
-import pers.neige.colonel.literal
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.annotation.CustomField
 import pers.neige.neigeitems.colonel.argument.command.IntegerArgument
 import pers.neige.neigeitems.colonel.argument.command.ItemArgument
@@ -27,102 +26,77 @@ import pers.neige.neigeitems.utils.SchedulerUtils.sync
 object Give {
     @JvmStatic
     @CustomField(fieldType = "root")
-    val get = literal<CommandSender, Unit>("get", arrayListOf("get", "getSilent")) {
-        argument("item", ItemArgument.INSTANCE) {
-            argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                argument("random", BooleanArgument<CommandSender, Unit>().setDefaultValue(true)) {
-                    argument(
-                        "data",
-                        StringArgument.builder<CommandSender, Unit>().readAll(true).build()
-                            .setDefaultValue(null)
-                    ) {
-                        setNullExecutor { context ->
-                            async {
-                                val sender = context.source ?: return@async
-                                if (sender !is Player) {
-                                    sender.sendLang("Messages.onlyPlayer")
-                                    return@async
-                                }
-                                val tip = context.getArgument<String>("get").equals("get", true)
-                                val item = context.getArgument<ItemArgument.ItemContainer>("item").itemGenerator!!
-                                val amount = context.getArgument<Int?>("amount")!!
-                                val random = context.getArgument<Boolean?>("random")!!
-                                val data = context.getArgument<String>("data")
-                                giveCommand(
-                                    sender, sender, item, amount, random, data, tip
-                                )
-                            }
-                        }
-                    }
+    val get = LiteralNode.literal<CommandSender, Unit>("get", "getSilent")
+        .thenArgument("item", ItemArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .thenArgument("random", BooleanArgument<CommandSender, Unit>().setDefaultValue(true))
+        .thenArgument("data", StringArgument.builder<CommandSender, Unit>().readAll(true).build().setDefaultValue(null))
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                if (sender !is Player) {
+                    sender.sendLang("Messages.onlyPlayer")
+                    return@async
                 }
+                val tip = context.getArgument<String>("get").equals("get", true)
+                val item = context.getArgument<ItemArgument.ItemContainer>("item").itemGenerator!!
+                val amount = context.getArgument<Int?>("amount")!!
+                val random = context.getArgument<Boolean?>("random")!!
+                val data = context.getArgument<String>("data")
+                giveCommand(
+                    sender, sender, item, amount, random, data, tip
+                )
             }
         }
-    }
+        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "root")
-    val give = literal<CommandSender, Unit>("give", arrayListOf("give", "giveSilent")) {
-        argument("player", PlayerArgument.NONNULL) {
-            argument("item", ItemArgument.INSTANCE) {
-                argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                    argument("random", BooleanArgument<CommandSender, Unit>().setDefaultValue(true)) {
-                        argument(
-                            "data",
-                            StringArgument.builder<CommandSender, Unit>().readAll(true).build()
-                                .setDefaultValue(null)
-                        ) {
-                            setNullExecutor { context ->
-                                async {
-                                    val sender = context.source ?: return@async
-                                    val tip = context.getArgument<String>("give").equals("give", true)
-                                    val player = context.getArgument<Player>("player")!!
-                                    val item = context.getArgument<ItemArgument.ItemContainer>("item").itemGenerator!!
-                                    val amount = context.getArgument<Int?>("amount")!!
-                                    val random = context.getArgument<Boolean?>("random")!!
-                                    val data = context.getArgument<String>("data")
-                                    giveCommand(
-                                        sender, player, item, amount, random, data, tip
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+    val give = LiteralNode.literal<CommandSender, Unit>("give", "giveSilent")
+        .thenArgument("player", PlayerArgument.NONNULL)
+        .thenArgument("item", ItemArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .thenArgument("random", BooleanArgument<CommandSender, Unit>().setDefaultValue(true))
+        .thenArgument("data", StringArgument.builder<CommandSender, Unit>().readAll(true).build().setDefaultValue(null))
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                val tip = context.getArgument<String>("give").equals("give", true)
+                val player = context.getArgument<Player>("player")!!
+                val item = context.getArgument<ItemArgument.ItemContainer>("item").itemGenerator!!
+                val amount = context.getArgument<Int?>("amount")!!
+                val random = context.getArgument<Boolean?>("random")!!
+                val data = context.getArgument<String>("data")
+                giveCommand(
+                    sender, player, item, amount, random, data, tip
+                )
             }
         }
-    }
+        .rootNode()
 
     @JvmStatic
     @CustomField(fieldType = "root")
-    val giveAll = literal<CommandSender, Unit>("giveAll", arrayListOf("giveAll", "giveAllSilent")) {
-        argument("item", ItemArgument.INSTANCE) {
-            argument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE) {
-                argument("random", BooleanArgument<CommandSender, Unit>().setDefaultValue(true)) {
-                    argument(
-                        "data",
-                        StringArgument.builder<CommandSender, Unit>().readAll(true).build()
-                            .setDefaultValue(null)
-                    ) {
-                        setNullExecutor { context ->
-                            async {
-                                val sender = context.source ?: return@async
-                                val tip = context.getArgument<String>("giveAll").equals("giveAll", true)
-                                val item = context.getArgument<ItemArgument.ItemContainer>("item").itemGenerator!!
-                                val amount = context.getArgument<Int?>("amount")!!
-                                val random = context.getArgument<Boolean?>("random")!!
-                                val data = context.getArgument<String>("data")
-                                Bukkit.getOnlinePlayers().forEach { player ->
-                                    giveCommand(
-                                        sender, player, item, amount, random, data, tip
-                                    )
-                                }
-                            }
-                        }
-                    }
+    val giveAll = LiteralNode.literal<CommandSender, Unit>("giveAll", "giveAllSilent")
+        .thenArgument("item", ItemArgument.INSTANCE)
+        .thenArgument("amount", IntegerArgument.POSITIVE_DEFAULT_ONE)
+        .thenArgument("random", BooleanArgument<CommandSender, Unit>().setDefaultValue(true))
+        .thenArgument("data", StringArgument.builder<CommandSender, Unit>().readAll(true).build().setDefaultValue(null))
+        .setNullExecutor { context ->
+            async {
+                val sender = context.source ?: return@async
+                val tip = context.getArgument<String>("giveAll").equals("giveAll", true)
+                val item = context.getArgument<ItemArgument.ItemContainer>("item").itemGenerator!!
+                val amount = context.getArgument<Int?>("amount")!!
+                val random = context.getArgument<Boolean?>("random")!!
+                val data = context.getArgument<String>("data")
+                Bukkit.getOnlinePlayers().forEach { player ->
+                    giveCommand(
+                        sender, player, item, amount, random, data, tip
+                    )
                 }
             }
         }
-    }
+        .rootNode()
 
     fun giveCommand(
         sender: CommandSender,

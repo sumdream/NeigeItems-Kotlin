@@ -58,6 +58,7 @@ object WhenParser : SectionParser() {
                 if (!parseCondition(
                         condition, ActionContext(
                             player?.player,
+                            null,
                             mapOf(Pair("value", value), Pair("cache", cache), Pair("sections", sections))
                         )
                     ).isStop

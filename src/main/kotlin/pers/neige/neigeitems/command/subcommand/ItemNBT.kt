@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import pers.neige.colonel.context.Context
-import pers.neige.colonel.literal
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.annotation.CustomField
 import pers.neige.neigeitems.libs.bot.inker.bukkit.nbt.*
 import pers.neige.neigeitems.manager.HookerManager.append
@@ -22,11 +22,11 @@ import pers.neige.neigeitems.utils.SchedulerUtils.async
 object ItemNBT {
     @JvmStatic
     @CustomField(fieldType = "root")
-    val itemNBT = literal<CommandSender, Unit>("itemNBT") {
-        setNullExecutor { context ->
+    val itemNBT = LiteralNode.literal<CommandSender, Unit>("itemNBT")
+        .setNullExecutor { context ->
             itemNBT(context)
         }
-    }
+        .rootNode()
 
     private fun itemNBT(context: Context<CommandSender, Unit>) {
         async {

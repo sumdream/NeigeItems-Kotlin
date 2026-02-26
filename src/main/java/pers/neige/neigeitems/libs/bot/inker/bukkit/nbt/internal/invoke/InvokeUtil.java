@@ -1,5 +1,6 @@
 package pers.neige.neigeitems.libs.bot.inker.bukkit.nbt.internal.invoke;
 
+import lombok.val;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import pers.neige.neigeitems.JvmHacker;
@@ -14,14 +15,12 @@ import pers.neige.neigeitems.ref.server.level.RefWorldServer;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.Field;
 
 public class InvokeUtil {
     public static final MethodHandle getMetaFromItemStack;
     public static final MethodHandle setMetaToItemStack;
     public static final MethodHandle getCustomTagFromCraftMetaItem;
     public static final MethodHandle setCustomTagToCraftMetaItem;
-    public static final Field chunkMapField;
     public static final MethodHandle constructorOfTrackedEntity;
     public static final MethodHandle getChunkMapFromServerChunkCache;
     /**
@@ -36,7 +35,7 @@ public class InvokeUtil {
                 setMetaToItemStack = null;
                 getCustomTagFromCraftMetaItem = JvmHacker.lookup().findGetter(Class.forName("org.bukkit.craftbukkit.inventory.CraftMetaItem"), "customTag", RefNbtTagCompound.class);
                 setCustomTagToCraftMetaItem = JvmHacker.lookup().findSetter(Class.forName("org.bukkit.craftbukkit.inventory.CraftMetaItem"), "customTag", RefNbtTagCompound.class);
-                chunkMapField = RefServerChunkCache.class.getDeclaredField("chunkMap");
+                val chunkMapField = RefServerChunkCache.class.getDeclaredField("chunkMap");
                 chunkMapField.setAccessible(true);
                 constructorOfTrackedEntity = JvmHacker.lookup().findConstructor(RefTrackedEntity.class, MethodType.methodType(void.class, chunkMapField.getType(), RefEntity.class, int.class, int.class, boolean.class));
                 getChunkMapFromServerChunkCache = JvmHacker.lookup().findGetter(RefServerChunkCache.class, "chunkMap", chunkMapField.getType());
@@ -45,7 +44,6 @@ public class InvokeUtil {
                 setMetaToItemStack = JvmHacker.lookup().findSetter(ItemStack.class, "meta", ItemMeta.class);
                 getCustomTagFromCraftMetaItem = null;
                 setCustomTagToCraftMetaItem = null;
-                chunkMapField = null;
                 constructorOfTrackedEntity = null;
                 getChunkMapFromServerChunkCache = null;
             }

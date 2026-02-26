@@ -2,9 +2,8 @@ package pers.neige.neigeitems.command.subcommand
 
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import pers.neige.colonel.argument
 import pers.neige.colonel.context.Context
-import pers.neige.colonel.literal
+import pers.neige.colonel.node.impl.LiteralNode
 import pers.neige.neigeitems.annotation.CustomField
 import pers.neige.neigeitems.colonel.argument.command.FileNameArgument
 import pers.neige.neigeitems.colonel.argument.command.MaybeItemIdArgument
@@ -20,18 +19,16 @@ import pers.neige.neigeitems.utils.SchedulerUtils.async
 object Save {
     @JvmStatic
     @CustomField(fieldType = "root")
-    val save = literal<CommandSender, Unit>("save", arrayListOf("save", "cover")) {
-        argument("item", MaybeItemIdArgument.INSTANCE) {
-            setNullExecutor { context ->
-                handle(context, context.getArgument("item"))
-            }
-            argument("path", FileNameArgument { getDirectoryOrCreate("Items") }) {
-                setNullExecutor { context ->
-                    handle(context, context.getArgument("item"), context.getArgument("path"))
-                }
-            }
+    val save = LiteralNode.literal<CommandSender, Unit>("save", "cover")
+        .thenArgument("item", MaybeItemIdArgument.INSTANCE)
+        .setNullExecutor { context ->
+            handle(context, context.getArgument("item"))
         }
-    }
+        .thenArgument("path", FileNameArgument { getDirectoryOrCreate("Items") })
+        .setNullExecutor { context ->
+            handle(context, context.getArgument("item"), context.getArgument("path"))
+        }
+        .rootNode()
 
     private fun handle(context: Context<CommandSender, Unit>, id: String, path: String = "$id.yml") {
         val sender = context.source ?: return
