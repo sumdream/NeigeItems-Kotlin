@@ -61,19 +61,6 @@ public class ConditionWeightAction extends Action {
         return actions;
     }
 
-    public @NonNull List<Pair<Action, Double>> getActions(@NonNull ActionContext context) {
-        val result = new ArrayList<Pair<Action, Double>>();
-        for (val action : this.actions) {
-            val info = action.getFirst();
-            if (info.getFirst().easyCheck(context)) {
-                val weight = action.getSecond().getOrDefault(context, 1D);
-                if (weight <= 0) continue;
-                result.add(new Pair<>(info.getSecond(), weight));
-            }
-        }
-        return result;
-    }
-
     public int getAmount(@NonNull ActionContext context) {
         return this.amount.getOrDefault(context, 1);
     }

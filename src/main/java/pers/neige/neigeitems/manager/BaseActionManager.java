@@ -1,6 +1,7 @@
 package pers.neige.neigeitems.manager;
 
 import com.google.common.io.ByteStreams;
+import kotlin.Pair;
 import kotlin.text.StringsKt;
 import lombok.NonNull;
 import lombok.ToString;
@@ -509,7 +510,17 @@ public abstract class BaseActionManager {
         @NonNull ConditionWeightAction action,
         @NonNull ActionContext context
     ) {
-        val actions = action.getActions(context);
+        val actions = new ArrayList<Pair<Action, Double>>();
+        double totalWeight = 0;
+        for (val currentAction : action.getActions()) {
+            val info = currentAction.getFirst();
+            if (info.getFirst().easyCheck(context)) {
+                val weight = currentAction.getSecond().getOrDefault(context, 1D);
+                if (weight <= 0) continue;
+                actions.add(new Pair<>(info.getSecond(), weight));
+                totalWeight += weight;
+            }
+        }
         if (actions.isEmpty()) return CompletableFuture.completedFuture(Results.SUCCESS);
         val amount = action.getAmount(context);
         if (amount >= actions.size()) {
@@ -526,7 +537,7 @@ public abstract class BaseActionManager {
             return result;
         }
         if (amount == 1) {
-            val result = SamplingUtils.weight(actions);
+            val result = SamplingUtils.weight(actions, totalWeight);
             if (result != null) {
                 return result.evalAsyncSafe(this, context);
             }

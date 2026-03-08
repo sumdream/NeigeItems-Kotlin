@@ -49,25 +49,28 @@ public class StackableCooldown {
      */
     private void refresh() {
         // 满次数无需操作
-        if (amount == config.maxAmount) {
+        if (amount >= config.maxAmount) {
             return;
         }
-        // 当前次数
-        val time = currentTimeMillis();
-        while (true) {
-            // 不可恢复, 中止操作
-            if (nextRecoveryTime > time) {
-                break;
-            }
-            // 恢复一次
-            amount++;
-            // 次数未满, 时间后移
-            if (amount < config.maxAmount) {
-                nextRecoveryTime += config.cooldown;
-            } else {
-                // 次数已满, 终止操作
-                break;
-            }
+        // 当前时间
+        val now = currentTimeMillis();
+        // 不可恢复, 中止操作
+        if (now < nextRecoveryTime) {
+            return;
+        }
+        // 时间差
+        val delta = now - nextRecoveryTime;
+        // 可恢复次数
+        val recoverable = delta / config.cooldown + 1;
+        // 最大恢复次数
+        val maxRecover = config.maxAmount - amount;
+        // 实际恢复次数
+        val recover = (int) Math.min(recoverable, maxRecover);
+        // 恢复
+        amount += recover;
+        // 次数未满, 时间后移
+        if (amount < config.maxAmount) {
+            nextRecoveryTime += (long) recover * config.cooldown;
         }
     }
 

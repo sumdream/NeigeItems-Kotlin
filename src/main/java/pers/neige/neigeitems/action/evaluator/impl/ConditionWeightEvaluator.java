@@ -49,17 +49,19 @@ public abstract class ConditionWeightEvaluator<T> extends Evaluator<T> {
     @Contract("_, !null -> !null")
     public @Nullable T getOrDefault(@NonNull ActionContext context, @Nullable T def) {
         val evaluators = new ArrayList<Pair<Evaluator<T>, Double>>();
+        double totalWeight = 0;
         for (val evaluator : this.evaluators) {
             if (!evaluator.condition.easyCheck(context)) continue;
             val weight = evaluator.weightEvaluator.getOrDefault(context, 1D);
             if (weight <= 0) continue;
             evaluators.add(new Pair<>(evaluator.evaluator, weight));
+            totalWeight += weight;
         }
         if (evaluators.isEmpty()) return def;
         if (evaluators.size() == 1) {
             return evaluators.get(0).getFirst().getOrDefault(context, def);
         }
-        val evaluator = SamplingUtils.weight(evaluators);
+        val evaluator = SamplingUtils.weight(evaluators, totalWeight);
         if (evaluator == null) return def;
         return evaluator.getOrDefault(context, def);
     }
