@@ -2,6 +2,7 @@ package pers.neige.neigeitems.section.impl
 
 import org.bukkit.OfflinePlayer
 import org.bukkit.configuration.ConfigurationSection
+import pers.neige.neigeitems.manager.ConfigManager
 import pers.neige.neigeitems.section.SectionParser
 import pers.neige.neigeitems.utils.ScriptUtils.calculate
 import pers.neige.neigeitems.utils.ScriptUtils.toRoundingMode
@@ -38,6 +39,7 @@ object CalculationParser : SectionParser() {
         player: OfflinePlayer?,
         sections: ConfigurationSection?
     ): String {
+        if (cache != null && cache.containsKey("papi-environment") && !ConfigManager.enableJsPapi) return "<$id::${args.joinToString("_")}>"
         return handler(
             cache,
             player,

@@ -38,7 +38,11 @@ object PapiExpansion {
         expansion = papiHooker?.newPlaceholderExpansion("ni", "Neige", "1.0.0") { player, param ->
             val params = param.split("_", limit = 2)
             when (val key = params[0].lowercase()) {
-                "parse" -> return@newPlaceholderExpansion params.getOrNull(1)?.parseSection(player) ?: ""
+                "parse" -> {
+                    val cache = HashMap<String, String>()
+                    cache["papi-environment"] = ""
+                    return@newPlaceholderExpansion params.getOrNull(1)?.parseSection(cache, player, null) ?: ""
+                }
                 "data", "nbt" -> {
                     // 玩家在线且当前PAPI变量输入了参数
                     if (player is Player && params.size == 2) {
