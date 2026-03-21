@@ -70,7 +70,7 @@ object Search {
                 // 逐个获取物品
                 for (index in (prevItemAmount until prevItemAmount + ConfigManager.config.getInt("ItemList.ItemAmount"))) {
                     if (index == ids.size + 1) break
-                    val id = ids[index - 1]
+                    val id = ids.getOrNull(index - 1) ?: break
                     // 替换信息内变量
                     var listItemMessage =
                         (ConfigManager.config.getString("ItemList.ItemFormat") ?: "").replace(
