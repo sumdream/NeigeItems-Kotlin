@@ -58,6 +58,7 @@ import static pers.neige.neigeitems.utils.ListUtils.*;
 @SuppressWarnings("unchecked")
 @ToString(of = "plugin")
 public abstract class BaseActionManager {
+    private static final @NonNull Object VAULT_LOCK = new Object();
     /**
      * 所有插件的物品动作实现函数
      */
@@ -1428,19 +1429,23 @@ public abstract class BaseActionManager {
         });
         // 给予玩家金钱
         addConsumer(Arrays.asList("give-money", "giveMoney"), (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
-            val hooker = HookerManager.INSTANCE.getVaultHooker();
-            if (hooker == null) return;
-            hooker.giveMoney(player, NumberParser.parseDouble(content, 0.0));
+            synchronized (VAULT_LOCK) {
+                val player = context.getPlayer();
+                if (player == null) return;
+                val hooker = HookerManager.INSTANCE.getVaultHooker();
+                if (hooker == null) return;
+                hooker.giveMoney(player, NumberParser.parseDouble(content, 0.0));
+            }
         });
         // 扣除玩家金钱
         addConsumer(Arrays.asList("take-money", "takeMoney"), (context, content) -> {
-            val player = context.getPlayer();
-            if (player == null) return;
-            val hooker = HookerManager.INSTANCE.getVaultHooker();
-            if (hooker == null) return;
-            hooker.takeMoney(player, NumberParser.parseDouble(content, 0.0));
+            synchronized (VAULT_LOCK) {
+                val player = context.getPlayer();
+                if (player == null) return;
+                val hooker = HookerManager.INSTANCE.getVaultHooker();
+                if (hooker == null) return;
+                hooker.takeMoney(player, NumberParser.parseDouble(content, 0.0));
+            }
         });
         // 给予玩家经验
         addConsumer(Arrays.asList("give-exp", "giveExp"), false, (context, content) -> {
