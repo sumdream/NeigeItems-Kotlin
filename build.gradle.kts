@@ -11,7 +11,7 @@ plugins {
     kotlin("plugin.lombok") version "2.1.20"
     id("org.jetbrains.dokka") version "2.0.0"
     id("com.gradleup.shadow") version "8.3.5"
-    id("org.inksnow.ankh-invoke-gradle-plugin") version "1.0.24-SNAPSHOT"
+    id("org.inksnow.ankh-invoke-gradle-plugin") version "1.0.25-SNAPSHOT"
 }
 
 val realVersion = version
@@ -94,7 +94,7 @@ dependencies {
 
     // ankh-invoke
     implementation("org.inksnow.cputil:logger:1.15")
-    implementation("org.inksnow:ankh-invoke-bukkit:1.0.24-SNAPSHOT")
+    implementation("org.inksnow:ankh-invoke-bukkit:1.0.25-SNAPSHOT")
 
     // bstats
     implementation("org.bstats:bstats-bukkit:3.0.2")
@@ -251,29 +251,25 @@ tasks.create<BuildMappingsTask>("build-mappings") {
     outputDirectory = layout.buildDirectory.file("cache/build-mappings").get().asFile
     ankhInvokePackage = "${rootProject.group}.libs.org.inksnow.ankhinvoke"
 
-    mapping("nms", "1.21.4") {
-        predicates = arrayOf("craftbukkit_version:{v1_21_R3}")
-    }
-    mapping("nms", "1.21.3") {
-        predicates = arrayOf("craftbukkit_version:{v1_21_R2}")
-    }
-    mapping("nms", "1.21.1") {
-        predicates = arrayOf("craftbukkit_version:{v1_21_R1}")
-    }
     mapping("nms", "1.20.4") {
         predicates = arrayOf("craftbukkit_version:{v1_20_R3}")
+        buildDataDirectory = file("build-data/1.20.4")
     }
     mapping("nms", "1.20.2") {
         predicates = arrayOf("craftbukkit_version:{v1_20_R2}")
+        buildDataDirectory = file("build-data/1.20.2")
     }
     mapping("nms", "1.20.1") {
         predicates = arrayOf("craftbukkit_version:{v1_20_R1}")
+        buildDataDirectory = file("build-data/1.20.1")
     }
     mapping("nms", "1.19.4") {
         predicates = arrayOf("craftbukkit_version:{v1_19_R3}")
+        buildDataDirectory = file("build-data/1.19.4")
     }
     mapping("nms", "1.18.2") {
         predicates = arrayOf("craftbukkit_version:{v1_18_R2}")
+        buildDataDirectory = file("build-data/1.18.2")
     }
 }
 

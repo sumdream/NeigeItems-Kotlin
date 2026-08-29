@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
 import org.inksnow.ankhinvoke.bukkit.AnkhInvokeBukkit;
 import org.inksnow.ankhinvoke.bukkit.injector.JarTransformInjector;
+import org.inksnow.ankhinvoke.bukkit.paper.PaperEnvironment;
 import org.inksnow.cputil.logger.AuroraLoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,12 @@ public class NeigeItems extends JavaPlugin {
         logger = LoggerFactory.getLogger(NeigeItems.class.getSimpleName());
         try {
             logger.info("loading ankh-invoke");
-            AnkhInvokeBukkit.forBukkit(NeigeItems.class)
+            boolean useMojangRuntimeNames =
+                CbVersion.v1_21_R1.isSupport() && PaperEnvironment.hasPaperMapping();
+            val ankhInvokeBuilder = AnkhInvokeBukkit.forBukkit(
+                NeigeItems.class,
+                !useMojangRuntimeNames
+            )
                 .reference()
                 .appendPackage("pers.neige.neigeitems.ref")
                 .build()
@@ -39,11 +45,12 @@ public class NeigeItems extends JavaPlugin {
                         .transformPackage("pers.neige.neigeitems.libs.bot.inker.bukkit.nbt.")
                         .build()
                 )
-                .build()
-                .referenceRemap()
-                .setApplyMapRegistry("neigeitems")
-                .build()
                 .build();
+            val referenceRemapBuilder = ankhInvokeBuilder.referenceRemap();
+            if (!useMojangRuntimeNames) {
+                referenceRemapBuilder.setApplyMapRegistry("neigeitems");
+            }
+            referenceRemapBuilder.build().build();
             logger.info("ankh-invoke loaded");
         } catch (Throwable e) {
             logger.error("failed to load ankh-invoke", e);
