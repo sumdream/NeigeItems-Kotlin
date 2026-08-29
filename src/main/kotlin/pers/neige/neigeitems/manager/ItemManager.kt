@@ -671,7 +671,7 @@ object ItemManager : ItemConfigManager() {
         // 还原物品类型
         itemStack.type = newItemStack.type
         // 还原损伤值(1.12.2需要)
-        if (CbVersion.current() == CbVersion.v1_12_R1) {
+        if (CbVersion.current() == CbVersion.v1_12_R1 && !item.protectDamage) {
             itemStack.setDamage(newItemStack.getDamage())
         }
         // 发送提示信息

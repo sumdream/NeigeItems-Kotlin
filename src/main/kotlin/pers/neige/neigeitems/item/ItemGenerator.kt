@@ -75,6 +75,13 @@ class ItemGenerator(val itemConfig: ItemConfig) {
     val update = configSection.getBoolean("options.update.enable", false)
 
     /**
+     * 获取更新时是否保护损伤值(仅1.12.2生效)
+     */
+    val protectDamage = if (update) {
+        configSection.getBoolean("options.update.protect-damage")
+    } else false
+
+    /**
      * 获取更新时保护的NBT
      */
     val protectNBT = if (update) {
